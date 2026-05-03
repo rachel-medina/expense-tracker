@@ -11,7 +11,6 @@ def add_expense(description, amount, category, date):
     conn.commit()
     conn.close()
 
-
 def delete_expense(expense_id):
     conn = connect()
     cursor = conn.cursor()
@@ -19,6 +18,17 @@ def delete_expense(expense_id):
     cursor.execute("DELETE FROM expenses WHERE id = ?", (expense_id,))
     conn.commit()
     conn.close()
+
+def expense_exists(expense_id):
+    conn = connect()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT 1 FROM expenses WHERE id = ?", (expense_id,))
+    result = cursor.fetchone()
+
+    conn.close()
+    return result is not None
+
 
 def get_total(group_by=None):
     conn = connect()
@@ -41,28 +51,33 @@ def get_total(group_by=None):
         rows = cursor.fetchall()
 
     else:
-        cursor.execute("""
-            SELECT SUM(amount)
-            FROM expenses
-        """)
+        cursor.execute("SELECT SUM(amount) FROM expenses")
         rows = cursor.fetchone()
 
     conn.close()
     return rows
 
-def get_details(group_by = None, value = None):
+def get_details(category = None, month = None):
     conn = connect()
     cursor = conn.cursor()
 
-    if group_by == "category":
-        cursor.execute("SELECT * FROM expenses WHERE category = ?", (value,))
-        rows = cursor.fetchall()
-    elif group_by == "--month":
-        cursor.execute("SELECT * FROM esxpenses WHERE substr(date, 1, 7) = ?", (value,))
-        rows = cursor.fetchall
-    else:
-        cursor.execute("SELECT * FROM expenses")
-        rows = cursor.fetchall()
+    query = "SELECT * FROM expenses"
+    conditions = []
+    params = []
+
+    if category:
+        conditions.append("category = ?")
+        params.append(category)
+
+    if month:
+        conditions.append("substr(date, 1, 7) = ?")
+        params.append(month)
+    
+    if conditions:
+        query += " WHERE " + " AND ".join(conditions)
+
+    cursor.execute(query, params)
+    rows = cursor.fetchall()
 
     conn.close()
     return rows
