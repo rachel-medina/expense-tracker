@@ -1,7 +1,3 @@
-#TODO
-#       
-#       CLI output
-
 import argparse
 from datetime import date
 from db import create_table
@@ -35,7 +31,6 @@ details_parser.add_argument("value", nargs = "?")
 def main():
     create_table()
     args = parser.parse_args()
-
 
     if args.command == "add":
         today = str(date.today())
@@ -74,9 +69,9 @@ def main():
             for row in expenses:
                 print(f"{row[0]} | {row[1]} | ${row[2]:.2f} | {row[3]} | {row[4]}")
 
-
     else:
         parser.print_help()
+
 
 if __name__ == "__main__":
     main()
